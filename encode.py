@@ -25,7 +25,6 @@ def parse_args():
     return args
 
 
-
 ARGS = parse_args()
 
 def main(b,r):
@@ -34,7 +33,6 @@ def main(b,r):
         keyInt = int(ARGS.fps)*2
         keyIntMin = int(ARGS.fps)*2
         #fileName = ARGS.inputFile.split("/")[-1]
-
         
         downSampleVidFile = f"{downSampleDir}/{ARGS.outputFile}_2k_{ARGS.codec}_{ARGS.fps}.mp4"
 
@@ -47,9 +45,9 @@ def main(b,r):
         if ARGS.codec=="h264":
             cmdFfmpeg = f"ffmpeg -i {downSampleVidFile} -vf scale={r} -vcodec libx264 -b:v {b}k -c:v libx264 -r {ARGS.fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -keyint_min {keyIntMin}  -sc_threshold 0 -x264opts 'no-scenecut' -t 300  -an {encodedVideoFile}"
         elif ARGS.codec=="h265":
-            cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libx265 -b:v {b}k -c:v libx265 -r {ARGS.fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -keyint_min {keyIntMin} -sc_threshold 0 -x265-params 'no-scenecut=1' -an {encodedVideoFile}"
+            cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libx265 -b:v {b}k -c:v libx265 -r {ARGS.fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -keyint_min {keyIntMin} -sc_threshold 0 -x265-params 'no-scenecut=1' -t 300 -an {encodedVideoFile}"
         elif ARGS.codec=="av1":
-            cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libaom-av1 -b:v {b}k -c:v libaom-av1 -r {ARGS.fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -keyint_min {keyIntMin} -sc_threshold 0 -cpu-used 4 -crf 30 -an {encodedVideoFile}"
+            cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libaom-av1 -b:v {b}k -c:v libaom-av1 -r {ARGS.fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -keyint_min {keyIntMin} -sc_threshold 0 -crf 30 -t 300 -an {encodedVideoFile}"
             
         # Start the encoding process
         os.system(cmdFfmpeg)
@@ -149,7 +147,6 @@ if __name__=="__main__":
         high_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in medhigh_bitrate_ladder]
         superhigh_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in high_bitrate_ladder]
         
-        
     comp_bitrate_ladder = {
         "low":low_bitrate_ladder,
         "lowmed":lowmed_bitrate_ladder,
@@ -171,7 +168,7 @@ if __name__=="__main__":
     elif ARGS.codec=="h265":
         cmdDownSample = f"ffmpeg -y -i {ARGS.inputFile} -vf scale=2460:1440 -vcodec libx265 -b:v 12000k -c:v libx265 -r {ARGS.fps} -sc_threshold 0 -x265-params 'no-scenecut=1' -an {downSampleVidFile}"
     elif ARGS.codec=="av1":
-        cmdDownSample = f"ffmpeg -y -i {ARGS.inputFile} -vf scale=2460:1440 -vcodec libaom-av1 -b:v 9000k -c:v libaom-av1 -cpu-used 4 -crf 30 -r {ARGS.fps} -sc_threshold 0 -an {downSampleVidFile}"
+        cmdDownSample = f"ffmpeg -y -i {ARGS.inputFile} -vf scale=2460:1440 -vcodec libaom-av1 -b:v 9000k -c:v libaom-av1 -crf 30 -r {ARGS.fps} -sc_threshold 0 -an {downSampleVidFile}"
 
     if f"{ARGS.outputFile}_2k_{ARGS.codec}_{ARGS.fps}.mp4" not in os.listdir(downSampleDir):
         os.system(cmdDownSample)
