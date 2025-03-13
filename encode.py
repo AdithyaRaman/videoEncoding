@@ -30,8 +30,8 @@ ARGS = parse_args()
 def main(b,r):
         maxRate = "{}k".format(int(b)*1.2)
         bufSize = "{}k".format(int(b)*5)
-        keyInt = int(ARGS.fps)*2
-        keyIntMin = int(ARGS.fps)*2
+        keyInt = int(ARGS.fps)
+        keyIntMin = int(ARGS.fps)
         #fileName = ARGS.inputFile.split("/")[-1]
         
         downSampleVidFile = f"{downSampleDir}/{ARGS.outputFile}_2k_{ARGS.codec}_{ARGS.fps}.mp4"
@@ -43,11 +43,14 @@ def main(b,r):
 
         encodedVideoFile = f"{encodedVideoDir}/{outputFileId}.mp4"
         if ARGS.codec=="h264":
-            cmdFfmpeg = f"ffmpeg -i {downSampleVidFile} -vf scale={r} -vcodec libx264 -b:v {b}k -c:v libx264 -r {ARGS.fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -keyint_min {keyIntMin}  -sc_threshold 0 -x264opts 'no-scenecut' -t 300  -an {encodedVideoFile}"
+            #cmdFfmpeg = f"ffmpeg -i {downSampleVidFile} -vf scale={r} -vcodec libx264 -b:v {b}k -c:v libx264 -r {ARGS.fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -keyint_min {keyIntMin}  -sc_threshold 0 -x264opts 'no-scenecut' -t 300  -an {encodedVideoFile}"
+
+            #FFMPEG cmd with scene change detection
+            cmdFfmpeg = f"ffmpeg -i {downSampleVidFile} -vf scale={r} -vcodec libx264 -b:v {b}k -c:v libx264 -r {ARGS.fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -t 300  -an {encodedVideoFile}"
         elif ARGS.codec=="h265":
-            cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libx265 -b:v {b}k -c:v libx265 -r {ARGS.fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -keyint_min {keyIntMin} -sc_threshold 0 -x265-params 'no-scenecut=1' -t 300 -an {encodedVideoFile}"
+            cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libx265 -b:v {b}k -c:v libx265 -r {ARGS.fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -t 300 -an {encodedVideoFile}"
         elif ARGS.codec=="av1":
-            cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libaom-av1 -b:v {b}k -c:v libaom-av1 -r {ARGS.fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -keyint_min {keyIntMin} -sc_threshold 0 -crf 30 -t 300 -an {encodedVideoFile}"
+            cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libaom-av1 -b:v {b}k -c:v libaom-av1 -r {ARGS.fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -crf 30 -t 300 -an {encodedVideoFile}"
             
         # Start the encoding process
         os.system(cmdFfmpeg)
@@ -164,11 +167,12 @@ if __name__=="__main__":
 
     downSampleVidFile = f"{downSampleDir}/{ARGS.outputFile}_2k_{ARGS.codec}_{ARGS.fps}.mp4"
     if ARGS.codec=="h264":
-        cmdDownSample = f"ffmpeg -y -i {ARGS.inputFile} -vf scale=2460:1440 -vcodec libx264 -b:v 20000k -c:v libx264 -r {ARGS.fps} -sc_threshold 0 -x264opts 'no-scenecut' -an {downSampleVidFile}"
+        #cmdDownSample = f"ffmpeg -y -i {ARGS.inputFile} -vf scale=2460:1440 -vcodec libx264 -b:v 20000k -c:v libx264 -r {ARGS.fps} -sc_threshold 0 -x264opts 'no-scenecut' -an {downSampleVidFile}"
+        cmdDownSample = f"ffmpeg -y -i {ARGS.inputFile} -vf scale=2460:1440 -vcodec libx264 -b:v 20000k -c:v libx264 -r {ARGS.fps} -an {downSampleVidFile}"
     elif ARGS.codec=="h265":
-        cmdDownSample = f"ffmpeg -y -i {ARGS.inputFile} -vf scale=2460:1440 -vcodec libx265 -b:v 12000k -c:v libx265 -r {ARGS.fps} -sc_threshold 0 -x265-params 'no-scenecut=1' -an {downSampleVidFile}"
+        cmdDownSample = f"ffmpeg -y -i {ARGS.inputFile} -vf scale=2460:1440 -vcodec libx265 -b:v 12000k -c:v libx265 -r {ARGS.fps}  -an {downSampleVidFile}"
     elif ARGS.codec=="av1":
-        cmdDownSample = f"ffmpeg -y -i {ARGS.inputFile} -vf scale=2460:1440 -vcodec libaom-av1 -b:v 9000k -c:v libaom-av1 -crf 30 -r {ARGS.fps} -sc_threshold 0 -an {downSampleVidFile}"
+        cmdDownSample = f"ffmpeg -y -i {ARGS.inputFile} -vf scale=2460:1440 -vcodec libaom-av1 -b:v 9000k -c:v libaom-av1 -crf 30 -r {ARGS.fps} -an {downSampleVidFile}"
 
     if f"{ARGS.outputFile}_2k_{ARGS.codec}_{ARGS.fps}.mp4" not in os.listdir(downSampleDir):
         os.system(cmdDownSample)

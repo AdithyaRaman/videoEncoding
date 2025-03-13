@@ -39,8 +39,8 @@ OUTPUTDIR = "./inter4k/"
 def encode(b,r,videoId, fps):
     maxRate = "{}k".format(int(b)*1.2)
     bufSize = "{}k".format(int(b)*5)
-    keyInt = int(fps)*2
-    keyIntMin = int(fps)*2
+    keyInt = int(fps)
+    keyIntMin = int(fps)
     
     outputFileId = f"{videoId}-{b}k-{r.split(':')[0]}x{r.split(':')[1]}-{round(fps)}-{ARGS.codec}"
     inputFile = f"{INTER4KPATH}{videoId}.mp4"
@@ -56,11 +56,11 @@ def encode(b,r,videoId, fps):
     """
     
     if ARGS.codec=="h264":
-        cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libx264 -b:v {b}k -c:v libx264 -r {fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -keyint_min {keyIntMin}  -sc_threshold 0 -x264opts 'no-scenecut' -an {encodedVideoDir}/{outputFileId}.mp4"
+        cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libx264 -b:v {b}k -c:v libx264 -r {fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -an {encodedVideoDir}/{outputFileId}.mp4"
     elif ARGS.codec=="h265":
-        cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libx265 -b:v {b}k -c:v libx265 -r {fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -keyint_min {keyIntMin} -sc_threshold 0 -x265-params 'no-scenecut=1' -an {encodedVideoDir}/{outputFileId}.mp4"
+        cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libx265 -b:v {b}k -c:v libx265 -r {fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -an {encodedVideoDir}/{outputFileId}.mp4"
     elif ARGS.codec=="av1":
-        cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libaom-av1 -b:v {b}k -c:v libaom-av1 -r {fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -keyint_min {keyIntMin} -sc_threshold 0 -cpu-used 4 -crf 30 -an {encodedVideoDir}/{outputFileId}.mp4"
+        cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libaom-av1 -b:v {b}k -c:v libaom-av1 -r {fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -cpu-used 4 -crf 30 -an {encodedVideoDir}/{outputFileId}.mp4"
         
 
 
@@ -206,11 +206,11 @@ if __name__=="__main__":
             # cap.release()
 
             if ARGS.codec=="h264":
-                cmdDownSample = f"ffmpeg -y -i {INTER4KPATH}{videoId}.mp4 -vf scale=2460:1440 -vcodec libx264 -b:v 20000k -c:v libx264 -r {ARGS.fps} -sc_threshold 0 -x264opts 'no-scenecut' -an {downSampleDir}/{videoId}_2k_{ARGS.codec}_{ARGS.fps}.mp4"
+                cmdDownSample = f"ffmpeg -y -i {INTER4KPATH}{videoId}.mp4 -vf scale=2460:1440 -vcodec libx264 -b:v 20000k -c:v libx264 -r {ARGS.fps}  -an {downSampleDir}/{videoId}_2k_{ARGS.codec}_{ARGS.fps}.mp4"
             elif ARGS.codec=="h265":
-                cmdDownSample = f"ffmpeg -y -i {INTER4KPATH}{videoId}.mp4 -vf scale=2460:1440 -vcodec libx265 -b:v 12000k -c:v libx265 -r {ARGS.fps} -sc_threshold 0 -x265-params 'no-scenecut=1' -an {downSampleDir}/{videoId}_2k_{ARGS.codec}_{ARGS.fps}.mp4"
+                cmdDownSample = f"ffmpeg -y -i {INTER4KPATH}{videoId}.mp4 -vf scale=2460:1440 -vcodec libx265 -b:v 12000k -c:v libx265 -r {ARGS.fps}  -an {downSampleDir}/{videoId}_2k_{ARGS.codec}_{ARGS.fps}.mp4"
             elif ARGS.codec=="av1":
-                cmdDownSample = f"ffmpeg -y -i {INTER4KPATH}{videoId}.mp4 -vf scale=2460:1440 -vcodec libaom-av1 -b:v 9000k -c:v libaom-av1 -cpu-used 4 -crf 30 -r {ARGS.fps} -sc_threshold 0 -an {downSampleDir}/{videoId}_2k_{ARGS.codec}_{ARGS.fps}.mp4"
+                cmdDownSample = f"ffmpeg -y -i {INTER4KPATH}{videoId}.mp4 -vf scale=2460:1440 -vcodec libaom-av1 -b:v 9000k -c:v libaom-av1 -cpu-used 4 -crf 30 -r {ARGS.fps} -an {downSampleDir}/{videoId}_2k_{ARGS.codec}_{ARGS.fps}.mp4"
 
 
             
