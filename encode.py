@@ -28,29 +28,37 @@ def parse_args():
 ARGS = parse_args()
 
 def main(b,r):
-        maxRate = "{}k".format(int(b)*1.2)
-        bufSize = "{}k".format(int(b)*5)
+    
+        minRate = "{}k".format(int(b)*0.6)
+        maxRate = "{}k".format(int(b)*1.5)
+        bufSize = "{}k".format(int(b)*2)
         keyInt = int(ARGS.fps)
         keyIntMin = int(ARGS.fps)
         #fileName = ARGS.inputFile.split("/")[-1]
-        
         downSampleVidFile = f"{downSampleDir}/{ARGS.outputFile}_2k_{ARGS.codec}_{ARGS.fps}.mp4"
 
-        outputFileId = f"{ARGS.outputFile}-{b}k-{r.split(':')[0]}x{r.split(':')[1]}-{round(ARGS.fps)}-{ARGS.codec}"
+        outputFileId = f"{ARGS.outputFile}-{b}k-{r.split(':')[0]}x{r.split(':')[1]}-{round(ARGS.fps)}-{ARGS.codec}"        
+        if ARGS.codec!="vp9":
+            downSampleVidFile = f"{downSampleDir}/{ARGS.outputFile}_2k_{ARGS.codec}_{ARGS.fps}.mp4"
+            encodedVideoFile = f"{encodedVideoDir}/{outputFileId}.mp4"
+        else:
+            downSampleVidFile = f"{downSampleDir}/{ARGS.outputFile}_2k_{ARGS.codec}_{ARGS.fps}.webm"
+            encodedVideoFile = f"{encodedVideoDir}/{outputFileId}.webm"
         """
         FFMPEG Encoding
         """
 
-        encodedVideoFile = f"{encodedVideoDir}/{outputFileId}.mp4"
         if ARGS.codec=="h264":
             #cmdFfmpeg = f"ffmpeg -i {downSampleVidFile} -vf scale={r} -vcodec libx264 -b:v {b}k -c:v libx264 -r {ARGS.fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -keyint_min {keyIntMin}  -sc_threshold 0 -x264opts 'no-scenecut' -t 300  -an {encodedVideoFile}"
 
             #FFMPEG cmd with scene change detection
-            cmdFfmpeg = f"ffmpeg -i {downSampleVidFile} -vf scale={r} -vcodec libx264 -b:v {b}k -c:v libx264 -r {ARGS.fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -t 300  -an {encodedVideoFile}"
+            cmdFfmpeg = f"ffmpeg -i {downSampleVidFile} -vf scale={r} -vcodec libx264 -b:v {b}k -c:v libx264 -r {ARGS.fps} -minrate {minRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -t 300 -preset slow -an {encodedVideoFile}"
         elif ARGS.codec=="h265":
-            cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libx265 -b:v {b}k -c:v libx265 -r {ARGS.fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -t 300 -an {encodedVideoFile}"
+            cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libx265 -b:v {b}k -c:v libx265 -r {ARGS.fps} -minrate {minRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -t 300 -preset slow -an {encodedVideoFile}"
         elif ARGS.codec=="av1":
-            cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libaom-av1 -b:v {b}k -c:v libaom-av1 -r {ARGS.fps} -minrate {maxRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -crf 30 -t 300 -an {encodedVideoFile}"
+            cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libaom-av1 -b:v {b}k -c:v libaom-av1 -r {ARGS.fps} -minrate {minRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -crf 30 -t 300 -an {encodedVideoFile}"
+        elif ARGS.codec=="vp9":
+            cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -c:v libvpx-vp9 -b:v {b}k -r {ARGS.fps} -minrate {minRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -an {encodedVideoFile}"
             
         # Start the encoding process
         os.system(cmdFfmpeg)
@@ -112,38 +120,59 @@ if not os.path.exists(xpsnrDir):
         
 
 if __name__=="__main__":
-    low_bitrate_ladder = [
-            ("300","480:360"),
-            ("450","480:360"),
-            ("700","640:480"),
-            ("850","640:480"),
-            ("1350","1280:720"),
-            ("2000","1280:720"),
-            ("2500","1920:1080"),
-            ("3000","1920:1080"),
-            ("5000","2460:1440"),
-            ("7000","2460:1440"),
-        ]
+
+    # Base bitrate ladder for H.264
+    low_bitrate_ladder_h264 = [
+        ("300", "480:360"),
+        ("450", "480:360"),
+        ("700", "640:480"),
+        ("850", "640:480"),
+        ("1350", "1280:720"),
+        ("2000", "1280:720"),
+        ("2500", "1920:1080"),
+        ("3000", "1920:1080"),
+        ("5000", "2460:1440"),
+        ("7000", "2460:1440"),
+    ]
+
+    # Create H.265 ladder with ~25% lower bitrates compared to H.264
+    low_bitrate_ladder_h265 = [
+        (str(int(int(k[0]) * 0.75)), k[1]) for k in low_bitrate_ladder_h264
+    ]
+
+    # Create VP9 ladder with ~30% lower bitrates compared to H.264
+    low_bitrate_ladder_vp9 = [
+        (str(int(int(k[0]) * 0.7)), k[1]) for k in low_bitrate_ladder_h264
+    ]
+
+    # Create AV1 ladder with ~50% lower bitrates compared to H.264
+    low_bitrate_ladder_av1 = [
+        (str(int(int(k[0]) * 0.5)), k[1]) for k in low_bitrate_ladder_h264
+    ]
 
     if ARGS.codec == "h264":
-
-        low_bitrate_ladder = low_bitrate_ladder
-        lowmed_bitrate_ladder = [ (int(int(k[0])*1.2),k[1]) for k in low_bitrate_ladder]
-        med_bitrate_ladder = [ (int(int(k[0])*1.2),k[1]) for k in lowmed_bitrate_ladder]
-        medhigh_bitrate_ladder = [ (int(int(k[0])*1.2),k[1]) for k in med_bitrate_ladder]
-        high_bitrate_ladder = [ (int(int(k[0])*1.2),k[1]) for k in medhigh_bitrate_ladder]
-        superhigh_bitrate_ladder = [ (int(int(k[0])*1.2),k[1]) for k in high_bitrate_ladder]
-
-    elif ARGS.codec == "h265":
-        low_bitrate_ladder = [(int(int(k[0]) * 0.6), k[1]) for k in low_bitrate_ladder]
+        low_bitrate_ladder = low_bitrate_ladder_h264
         lowmed_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in low_bitrate_ladder]
         med_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in lowmed_bitrate_ladder]
         medhigh_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in med_bitrate_ladder]
         high_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in medhigh_bitrate_ladder]
         superhigh_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in high_bitrate_ladder]
-
+    elif ARGS.codec == "h265" or ARGS.codec == "hevc":
+        low_bitrate_ladder = low_bitrate_ladder_h265
+        lowmed_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in low_bitrate_ladder]
+        med_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in lowmed_bitrate_ladder]
+        medhigh_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in med_bitrate_ladder]
+        high_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in medhigh_bitrate_ladder]
+        superhigh_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in high_bitrate_ladder]
+    elif ARGS.codec == "vp9":
+        low_bitrate_ladder = low_bitrate_ladder_vp9
+        lowmed_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in low_bitrate_ladder]
+        med_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in lowmed_bitrate_ladder]
+        medhigh_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in med_bitrate_ladder]
+        high_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in medhigh_bitrate_ladder]
+        superhigh_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in high_bitrate_ladder]
     elif ARGS.codec == "av1":
-        low_bitrate_ladder = [(int(int(k[0]) * 0.45), k[1]) for k in low_bitrate_ladder]
+        low_bitrate_ladder = low_bitrate_ladder_av1
         lowmed_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in low_bitrate_ladder]
         med_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in lowmed_bitrate_ladder]
         medhigh_bitrate_ladder = [(int(int(k[0]) * 1.2), k[1]) for k in med_bitrate_ladder]
@@ -158,14 +187,17 @@ if __name__=="__main__":
         "high":high_bitrate_ladder,
         "superhigh":superhigh_bitrate_ladder
     }
-    
 
     bitrates = comp_bitrate_ladder[ARGS.videocomp]
     
     #p_args = [(b,bitrates[b]) for b in bitrates]
     p_args = bitrates
 
-    downSampleVidFile = f"{downSampleDir}/{ARGS.outputFile}_2k_{ARGS.codec}_{ARGS.fps}.mp4"
+    if ARGS.codec!="vp9":
+        downSampleVidFile = f"{downSampleDir}/{ARGS.outputFile}_2k_{ARGS.codec}_{ARGS.fps}.mp4"
+    else:
+        downSampleVidFile = f"{downSampleDir}/{ARGS.outputFile}_2k_{ARGS.codec}_{ARGS.fps}.webm"
+        
     if ARGS.codec=="h264":
         #cmdDownSample = f"ffmpeg -y -i {ARGS.inputFile} -vf scale=2460:1440 -vcodec libx264 -b:v 20000k -c:v libx264 -r {ARGS.fps} -sc_threshold 0 -x264opts 'no-scenecut' -an {downSampleVidFile}"
         cmdDownSample = f"ffmpeg -y -i {ARGS.inputFile} -vf scale=2460:1440 -vcodec libx264 -b:v 20000k -c:v libx264 -r {ARGS.fps} -an {downSampleVidFile}"
@@ -173,8 +205,10 @@ if __name__=="__main__":
         cmdDownSample = f"ffmpeg -y -i {ARGS.inputFile} -vf scale=2460:1440 -vcodec libx265 -b:v 12000k -c:v libx265 -r {ARGS.fps}  -an {downSampleVidFile}"
     elif ARGS.codec=="av1":
         cmdDownSample = f"ffmpeg -y -i {ARGS.inputFile} -vf scale=2460:1440 -vcodec libaom-av1 -b:v 9000k -c:v libaom-av1 -crf 30 -r {ARGS.fps} -an {downSampleVidFile}"
+    elif ARGS.codec=="vp9":
+        cmdDownSample = f"ffmpeg -y -i {ARGS.inputFile} -vf scale=2460:1440 -c:v libvpx-vp9 -b:v 20000k -crf 30 -deadline good -r {ARGS.fps} -an {downSampleVidFile}"
 
-    if f"{ARGS.outputFile}_2k_{ARGS.codec}_{ARGS.fps}.mp4" not in os.listdir(downSampleDir):
+    if f"{downSampleVidFile}" not in os.listdir(downSampleDir):
         os.system(cmdDownSample)
 
 
