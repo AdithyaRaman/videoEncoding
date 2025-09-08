@@ -21,7 +21,7 @@ ffmpeg -re -i $1   \
  [v2]scale=320:240[v2out]; \
  [v3]scale=640:360[v3out]; \
  [v4]scale=640:360[v4out]; \
-[v5]scale=640:360[v5out]; \
+ [v5]scale=640:360[v5out]; \
 [v6]scale=640:360[v6out]; \
 [v7]scale=640:360[v7out]; \
 [v8]scale=960:540[v8out]; \
@@ -87,4 +87,4 @@ ffmpeg -re -i $1   \
 -media_seg_name 'chunk-$RepresentationID$-$Number%05d$.m4s' \
 -seg_duration 1 -frag_duration 0.2 -ldash 1 \
 -adaptation_sets "id=0,streams=v id=1,streams=a" \
--f dash segments/$2/manifest.mpd
+-f dash m31_segments/$2/manifest.mpd
