@@ -14,41 +14,45 @@
 
 
 
+nohup ../raplPowerLogger/raplPowerLogger ./m31_encoding_power/m31_lldash_vp91.csv > nohup.out &
+PID=$!
+sleep 50
+
 ffmpeg -re -i $1   \
 -filter_complex "\
  [0:v]split=32[v1][v2][v3][v4][v5][v6][v7][v8][v9][v10][v11][v12][v13][v14][v15][v16][v17][v18][v19][v20][v21][v22][v23][v24][v25][v26][v27][v28][v29][v30][v31][v32]; \
- [v1]scale=320:240[v1out]; \
- [v2]scale=320:240[v2out]; \
- [v3]scale=640:360[v3out]; \
- [v4]scale=640:360[v4out]; \
- [v5]scale=640:360[v5out]; \
-[v6]scale=640:360[v6out]; \
-[v7]scale=640:360[v7out]; \
-[v8]scale=960:540[v8out]; \
-[v9]scale=640:480[v9out]; \
-[v10]scale=640:480[v10out]; \
-[v11]scale=640:480[v11out]; \
-[v12]scale=1280:720[v12out]; \
-[v13]scale=1280:720[v13out]; \
-[v14]scale=1280:720[v14out]; \
-[v15]scale=1280:720[v15out]; \
-[v16]scale=1280:720[v16out]; \
-[v17]scale=1920:1080[v17out]; \
-[v18]scale=1280:720[v18out]; \
-[v19]scale=1280:720[v19out]; \
-[v20]scale=1280:720[v20out]; \
-[v21]scale=1280:720[v21out]; \
-[v22]scale=1920:1080[v22out]; \
-[v23]scale=1920:1080[v23out]; \
-[v24]scale=1920:1080[v24out]; \
-[v25]scale=1920:1080[v25out]; \
-[v26]scale=1920:1080[v26out]; \
-[v27]scale=1920:1080[v27out]; \
-[v28]scale=1920:1080[v28out]; \
-[v29]scale=1920:1080[v29out]; \
-[v30]scale=2560:1440[v30out]; \
-[v31]scale=2560:1440[v31out]; \
-[v32]scale=2560:1440[v32out]" \
+ 																			 [v1]scale=320:240[v1out]; \
+ 			    [v2]scale=320:240[v2out]; \
+ 			    [v3]scale=640:360[v3out]; \
+ 			    [v4]scale=640:360[v4out]; \
+ 			    [v5]scale=640:360[v5out]; \
+ 			   [v6]scale=640:360[v6out]; \
+			  [v7]scale=640:360[v7out]; \
+			  [v8]scale=960:540[v8out]; \
+			  [v9]scale=640:480[v9out]; \
+			  [v10]scale=640:480[v10out]; \
+			    [v11]scale=640:480[v11out]; \
+			    [v12]scale=1280:720[v12out]; \
+			     [v13]scale=1280:720[v13out]; \
+			     [v14]scale=1280:720[v14out]; \
+			     [v15]scale=1280:720[v15out]; \
+			     [v16]scale=1280:720[v16out]; \
+			     [v17]scale=1920:1080[v17out]; \
+			      [v18]scale=1280:720[v18out]; \
+			      [v19]scale=1280:720[v19out]; \
+			      [v20]scale=1280:720[v20out]; \
+			      [v21]scale=1280:720[v21out]; \
+			      [v22]scale=1920:1080[v22out]; \
+			      [v23]scale=1920:1080[v23out]; \
+			      [v24]scale=1920:1080[v24out]; \
+			      [v25]scale=1920:1080[v25out]; \
+			      [v26]scale=1920:1080[v26out]; \
+			      [v27]scale=1920:1080[v27out]; \
+			      [v28]scale=1920:1080[v28out]; \
+			      [v29]scale=1920:1080[v29out]; \
+			      [v30]scale=2560:1440[v30out]; \
+			      [v31]scale=2560:1440[v31out]; \
+			      [v32]scale=2560:1440[v32out]" \
        -map "[v1out]" -c:v:0 libx264 -b:v:0 145k -minrate:v:0 145k -maxrate:v:0 145k -bufsize:v:0 290k \
        -map "[v2out]" -c:v:1 libx264 -b:v:1 240k -minrate:v:1 240k -maxrate:v:1 240k -bufsize:v:1 480k \
        -map "[v3out]" -c:v:2 libx264 -b:v:2 365k -minrate:v:2 365k -maxrate:v:2 365k -bufsize:v:2 730k \
@@ -81,10 +85,18 @@ ffmpeg -re -i $1   \
        -map "[v30out]" -c:v:29 libx264 -b:v:29 12000k -minrate:v:29 12000k -maxrate:v:29 12000k -bufsize:v:29 24000k \
        -map "[v31out]" -c:v:30 libx264 -b:v:30 15000k -minrate:v:30 15000k -maxrate:v:30 15000k -bufsize:v:30 30000k \
        -map "[v32out]" -c:v:31 libx264 -b:v:31 18000k -minrate:v:31 18000k -maxrate:v:31 18000k -bufsize:v:31 36000k \
--keyint_min 60 -g 60 -sc_threshold 0 -preset veryfast -tune zerolatency \
--use_template 1 -use_timeline 1 \
--init_seg_name 'init-$RepresentationID$.m4s' \
--media_seg_name 'chunk-$RepresentationID$-$Number%05d$.m4s' \
--seg_duration 1 -frag_duration 0.2 -ldash 1 \
--adaptation_sets "id=0,streams=v id=1,streams=a" \
--f dash m31_segments/$2/manifest.mpd
+       -keyint_min 60 -g 60 -sc_threshold 0 -preset veryfast -tune zerolatency \
+       -use_template 1 -use_timeline 1 \
+       -init_seg_name 'init-$RepresentationID$.m4s' \
+       -media_seg_name 'chunk-$RepresentationID$-$Number%05d$.m4s' \
+       -seg_duration 1 -frag_duration 0.2 -ldash 1 \
+       -adaptation_sets "id=0,streams=v id=1,streams=a" \
+       -f dash ./ll_encoded_videos/manifest.mpd
+
+
+sleep 50
+kill -SIGTERM $PID
+wait $PID
+
+
+rm ./ll_encoded_videos/*

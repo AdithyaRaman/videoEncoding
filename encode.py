@@ -38,13 +38,15 @@ def main(b,r):
         #fileName = ARGS.inputFile.split("/")[-1]
         #downSampleVidFile = f"{downSampleDir}/{ARGS.outputFile}_2k_{ARGS.codec}_{ARGS.fps}.mp4"
         downSampleVidFile = ARGS.inputFile
-        outputFileId = f"{ARGS.outputFile}-{b}k-{r.split(':')[0]}x{r.split(':')[1]}-{round(ARGS.fps)}-{ARGS.codec}"        
+        outputFileId = f"{ARGS.outputFile}-{b}k-{r.split(':')[0]}x{r.split(':')[1]}-{round(ARGS.fps)}-{ARGS.codec}"
+        downSampleVidFile = f"{downSampleDir}/{ARGS.outputFile}_2k_{ARGS.codec}_{ARGS.fps}.mp4"
         if ARGS.codec!="vp9":
             #downSampleVidFile = f"{downSampleDir}/{ARGS.outputFile}_2k_{ARGS.codec}_{ARGS.fps}.mp4"
-            downSampleVidFile = ARGS.inputFile
+            #downSampleVidFile = ARGS.inputFile
             encodedVideoFile = f"{encodedVideoDir}/{outputFileId}.mp4"
         else:
-            downSampleVidFile = f"{downSampleDir}/{ARGS.outputFile}_2k_{ARGS.codec}_{ARGS.fps}.webm"
+            #downSampleVidFile = ARGS.inputFile
+            #downSampleVidFile = f"{downSampleDir}/{ARGS.outputFile}_2k_{ARGS.codec}_{ARGS.fps}.webm"
             encodedVideoFile = f"{encodedVideoDir}/{outputFileId}.webm"
         """
         FFMPEG Encoding
@@ -58,7 +60,7 @@ def main(b,r):
         elif ARGS.codec=="h265":
             cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libx265 -b:v {b}k -c:v libx265 -r {ARGS.fps} -minrate {minRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -preset slow -an {encodedVideoFile}"
         elif ARGS.codec=="av1":
-            cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libaom-av1 -b:v {b}k -c:v libaom-av1 -r {ARGS.fps} -minrate {minRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -crf 30  -an {encodedVideoFile}"
+            cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -vcodec libaom-av1 -b:v {b}k -c:v libaom-av1 -r {ARGS.fps} -minrate {minRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -usage realtime -cpu-used 8 -an {encodedVideoFile}"
         elif ARGS.codec=="vp9":
             cmdFfmpeg = f"ffmpeg -y -i {downSampleVidFile} -vf scale={r} -c:v libvpx-vp9 -b:v {b}k -r {ARGS.fps} -minrate {minRate} -maxrate {maxRate} -bufsize {bufSize} -g {keyInt} -an {encodedVideoFile}"
             
@@ -94,7 +96,7 @@ def main(b,r):
         Run XPSNR Calculation
         """
         xpsnrOutputFile = f"{xpsnrDir}/{outputFileId}.txt"
-        cmdXpsnr = f" ffmpeg -r {ARGS.fps} -i {downSampleVidFile} -r {ARGS.fps} -i {encodedVideoFile} -lavfi '[1:v]scale=3840:2160[scaled];[0:v][scaled]xpsnr=stats_file={xpsnrOutputFile}' -vframes {int(ARGS.fps)*300} -f null -"
+        cmdXpsnr = f" ffmpeg -r {ARGS.fps} -i {downSampleVidFile} -r {ARGS.fps} -i {encodedVideoFile} -lavfi '[1:v]scale=2460:1440[scaled];[0:v][scaled]xpsnr=stats_file={xpsnrOutputFile}' -vframes {int(ARGS.fps)*300} -f null -"
         os.system(cmdXpsnr)
 
         end_time = time.time()
@@ -226,7 +228,10 @@ if __name__=="__main__":
     
     #p_args = [(b,bitrates[b]) for b in bitrates]
     p_args = bitrates
-
+    downSampleVidFile = f"{downSampleDir}/{ARGS.outputFile}_2k_{ARGS.codec}_{ARGS.fps}.mp4"
+    cmdDownSample = f"ffmpeg -y -i {ARGS.inputFile} -vf scale=2460:1440 -vcodec libx264 -b:v 20000k -crf 18 -c:v libx264 -r {ARGS.fps} -an {downSampleVidFile}"
+    #os.system(cmdDownSample)
+    
     # if ARGS.codec!="vp9":
     #     downSampleVidFile = f"{downSampleDir}/{ARGS.outputFile}_2k_{ARGS.codec}_{ARGS.fps}.mp4"
     # else:
@@ -247,6 +252,6 @@ if __name__=="__main__":
 
     downSampleVidFile = ARGS.inputFile
 
-    with multiprocessing.Pool(10) as pool:
+    with multiprocessing.Pool(30) as pool:
         pool.starmap(main,p_args)
             
