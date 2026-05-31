@@ -95,7 +95,21 @@ mkdir -p "${job_dir}"
 # Bitrate ladder: width, height, bitrate (in kbps)
 WIDTHS=(640  640  1280 1280 1920 1920  2560  2560)
 HEIGHTS=(360 360  720  720  1080 1080  1440  1440)
-BITRATES=(700 1500 2250 3500 9500 12000 15000 20000)
+
+BITRATES_h264=(700 1500 2250 3500 9500  12000 15000 20000)
+BITRATES_h265=(420 900  1350 2100 5700  7200  9000  12000)
+BITRATES_vp9=(450  975  1450 2275 6175  7800  9750  13000)
+BITRATES_av1=(350  750  1125 1750 4750  6000  7500  10000)
+
+# Select the ladder for the requested codec
+case "$CODEC" in
+    h264) BITRATES=("${BITRATES_h264[@]}") ;;
+    h265) BITRATES=("${BITRATES_h265[@]}") ;;
+    vp9)  BITRATES=("${BITRATES_vp9[@]}")  ;;
+    av1)  BITRATES=("${BITRATES_av1[@]}")  ;;
+    *)    echo "Unknown codec: $CODEC" >&2; exit 1 ;;
+esac
+
 
 for i in "${!BITRATES[@]}"; do
     W="${WIDTHS[$i]}"
