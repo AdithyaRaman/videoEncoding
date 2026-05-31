@@ -41,7 +41,6 @@ encode_h264() {
         -c:v libx264 -preset veryfast -tune zerolatency \
         -b:v "${br}k" -minrate "${br}k" -maxrate "${br}k" -bufsize "${br}k" \
         -x264-params "nal-hrd=cbr:force-cfr=1:keyint=60:min-keyint=60:scenecut=0:no-open-gop=1" \
-        -c:a aac -b:a 128k -ac 2 \
         -movflags +faststart \
         "$output"
 }
@@ -54,7 +53,6 @@ encode_h265() {
         -b:v "${br}k" -minrate "${br}k" -maxrate "${br}k" -bufsize "${br}k" \
         -x265-params "hrd=1:vbv-bufsize=${br}:vbv-maxrate=${br}:vbv-minrate=${br}:keyint=60:min-keyint=60:scenecut=0:no-open-gop=1:repeat-headers=1" \
         -tag:v hvc1 \
-        -c:a aac -b:a 128k -ac 2 \
         -movflags +faststart \
         "$output"
 }
@@ -67,7 +65,6 @@ encode_vp9() {
         -b:v "${br}k" -minrate "${br}k" -maxrate "${br}k" -bufsize "${br}k" \
         -g 60 -keyint_min 60 \
         -error-resilient 1 -lag-in-frames 0 -auto-alt-ref 0 \
-        -c:a libopus -b:a 128k -ac 2 \
         "$output"
 }
 
@@ -78,7 +75,6 @@ encode_av1() {
         -c:v libsvtav1 -preset 8 \
         -b:v "${br}k" \
         -svtav1-params "rc=2:tbr=${br}:mbr=${br}:bufsz=${br}:keyint=60:scd=0:pred-struct=1:lookahead=0:enable-overlays=0" \
-        -c:a aac -b:a 128k -ac 2 \
         -movflags +faststart \
         "$output"
 }
@@ -115,11 +111,10 @@ for i in "${!BITRATES[@]}"; do
     W="${WIDTHS[$i]}"
     H="${HEIGHTS[$i]}"
     BR="${BITRATES[$i]}"
-    OUT="${job_dir}/${W}x${H}_${BR}k.mp4"
+    OUT="${job_dir}/video_${W}x${H}_${BR}k.mp4"
     start_energy_meter ${job_dir}/energy_${W}x${H}_${BR}k.csv
     sleep $PRE_ENCODE_IDLE_S
     
-    echo "Encoding rung $((i+1))/${#BITRATES[@]}: ${W}x${H} @ ${BR}k -> $OUT"
     echo "Encoding rung $((i+1))/${#BITRATES[@]}: ${W}x${H} @ ${BR}k -> $OUT"
 
     case "$CODEC" in
@@ -132,6 +127,18 @@ for i in "${!BITRATES[@]}"; do
 
     sleep $POST_ENCODE_COOLDOWN_S
     kill_energy_meter
+done
+
+sleep 10
+
+for i in "${!BITRATES[@]}"; do
+
+    W="${WIDTHS[$i]}"
+    H="${HEIGHTS[$i]}"
+    BR="${BITRATES[$i]}"
+    OUT="${job_dir}/video_${W}x${H}_${BR}k.mp4"
+
+    nohup ffmpeg-quality-metrics $OUT $INPUT --metrics psnr ssim vmaf --vmaf-features motion float_ssim -p -of csv >> "${job_dir}/quality_${W}x${H}_${BR}k.csv" &
 done
 
 echo "Done. ${#BITRATES[@]} files in $OUTPUT_DIR"
