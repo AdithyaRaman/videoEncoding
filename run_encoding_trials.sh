@@ -6,7 +6,7 @@ INPUT=$1
 CODEC=$2
 PRESET="veryfast"
 
-base_name=$(basename "${INPUT}" .mp4)
+base_name=$(basename "${INPUT}" .webm)
 
 OUTPUT_BASE="./output/"       # Root output directory
 # Idle baseline window before FFmpeg starts (seconds)
@@ -97,7 +97,6 @@ if [ "$CODEC" = "h264" ]; then
 	   -seg_duration 1 -frag_type duration -frag_duration 0.2 \
 	   -streaming 1 -ldash 1 -write_prft 1 \
 	   -target_latency 1 \
-	   -window_size 5 -extra_window_size 10 \
 	   -adaptation_sets "id=0,streams=v id=1,streams=a" \
 	   -f dash ${job_dir}/output.mpd
 elif [ "$CODEC" = "h265" ]; then
@@ -157,7 +156,6 @@ elif [ "$CODEC" = "h265" ]; then
 	   -seg_duration 1 -frag_type duration -frag_duration 0.2 \
 	   -streaming 1 -ldash 1 -write_prft 1 \
 	   -target_latency 1 \
-	   -window_size 5 -extra_window_size 10 \
 	   -adaptation_sets "id=0,streams=v id=1,streams=a" \
 	   -f dash ${job_dir}/output.mpd
     
@@ -209,7 +207,6 @@ elif [ "$CODEC" = "vp9" ]; then
 	   -seg_duration 1 -frag_type duration -frag_duration 0.2 \
 	   -streaming 1 -ldash 1 -write_prft 1 \
 	   -target_latency 1 \
-	   -window_size 5 -extra_window_size 10 \
 	   -adaptation_sets "id=0,streams=v id=1,streams=a" \
 	   -f dash ${job_dir}/output.mpd
     
@@ -270,7 +267,6 @@ elif [ "$CODEC" = "av1" ]; then
 	   -seg_duration 1 -frag_type duration -frag_duration 0.2 \
 	   -streaming 1 -ldash 1 -write_prft 1 \
 	   -target_latency 1 \
-	   -window_size 5 -extra_window_size 10 \
 	   -adaptation_sets "id=0,streams=v id=1,streams=a" \
 	   -f dash ${job_dir}/output.mpd
 

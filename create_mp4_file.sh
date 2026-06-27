@@ -79,7 +79,7 @@ encode_av1() {
         "$output"
 }
 
-base_name=$(basename "${INPUT}" .mp4)
+base_name=$(basename "${INPUT}" .webm)
 
 OUTPUT_BASE="./output/"       # Root output directory
 # Idle baseline window before FFmpeg starts (seconds)
@@ -131,14 +131,14 @@ done
 
 sleep 10
 
-for i in "${!BITRATES[@]}"; do
+# for i in "${!BITRATES[@]}"; do
 
-    W="${WIDTHS[$i]}"
-    H="${HEIGHTS[$i]}"
-    BR="${BITRATES[$i]}"
-    OUT="${job_dir}/video_${W}x${H}_${BR}k.mp4"
+#     W="${WIDTHS[$i]}"
+#     H="${HEIGHTS[$i]}"
+#     BR="${BITRATES[$i]}"
+#     OUT="${job_dir}/video_${W}x${H}_${BR}k.mp4"
 
-    nohup ffmpeg-quality-metrics $OUT $INPUT --metrics psnr ssim vmaf --vmaf-features motion float_ssim -p -of csv >> "${job_dir}/quality_${W}x${H}_${BR}k.csv" &
-done
+#     nohup ffmpeg-quality-metrics $OUT $INPUT --metrics psnr ssim vmaf --vmaf-features motion float_ssim -p -of csv >> "${job_dir}/quality_${W}x${H}_${BR}k.csv" &
+# done
 
 echo "Done. ${#BITRATES[@]} files in $OUTPUT_DIR"
