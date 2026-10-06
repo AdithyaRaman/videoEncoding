@@ -107,7 +107,6 @@ start_energy_meter ${job_dir}/energy.csv
 echo "Started Energy Logging"
 sleep $PRE_ENCODE_IDLE_S
 
-
 if [ "$CODEC" = "h264" ]; then
     # ===================== H.264 / libx264 =====================
     # Pass 1: only 4 streams, one per resolution
