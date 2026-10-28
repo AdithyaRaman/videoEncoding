@@ -1,20 +1,5 @@
 #!/bin/bash
-# ===========================================================================
-# Capped CRF ladder encoding — FULL ladder (SD + HD + UHD) in one ffmpeg run
-#
-# Usage: ./run_crf_full.sh <input.mp4> <h264|av1|vp9>
-#
-# One decode, one filtergraph, N encoders, one DASH manifest:
-#
-#   H.264 : 12 rungs — 144/240/360/480/720/1080, two rungs each (A + B)
-#   AV1   :  8 rungs — one rung (A) per resolution
-#   VP9   :  8 rungs — one rung (A) per resolution
-#
-# ffmpeg arguments are assembled into a bash array rather than one long
-# backslash-continued command: a stray blank line or trailing space after a
-# "\" silently truncates a continued command, and at 14 rungs that failure
-# is essentially impossible to spot by eye.
-# ===========================================================================
+
 
 ENERGY_METER="/home/cc/bin/cham_monitor"
 
@@ -29,8 +14,8 @@ fi
 
 base_name=$(basename "${INPUT}" .mp4)
 
-OUTPUT_BASE="./output_v4"        # Root output directory
-job_dir="${OUTPUT_BASE}/${base_name}_ccrf/HD_${CODEC}"
+OUTPUT_BASE="./output"        # Root output directory
+job_dir="${OUTPUT_BASE}/${base_name}/HD_${CODEC}"
 mkdir -p "${job_dir}"
 
 # Idle baseline window before FFmpeg starts (seconds)
@@ -55,14 +40,13 @@ ENERGY_METER_PID=0
 # ---------------------------------------------------------------------------
 
 # --- H.264 / libx264 (0-51) ---
-H264_CRF_A=27
-H264_CRF_B=23
-
+H264_CRF_A=30
+H264_CRF_B=24
 # --- AV1 / libsvtav1 (0-63) ---
-AV1_CRF_A=36
+AV1_CRF_A=42
 
 # --- VP9 / libvpx-vp9 (0-63) ---
-VP9_CRF_A=36
+VP9_CRF_A=42
 
 # --- H.264 ceilings (cap / bufsize, bufsize = 2x cap) ---
 H264_CAP_144_A=50k    ; H264_BUF_144_A=100k

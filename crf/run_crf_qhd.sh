@@ -29,8 +29,8 @@ fi
 
 base_name=$(basename "${INPUT}" .mp4)
 
-OUTPUT_BASE="./output_v4"        # Root output directory
-job_dir="${OUTPUT_BASE}/${base_name}_ccrf/QUHD_${CODEC}"
+OUTPUT_BASE="./output"        # Root output directory
+job_dir="${OUTPUT_BASE}/${base_name}/QUHD_${CODEC}"
 mkdir -p "${job_dir}"
 
 # Idle baseline window before FFmpeg starts (seconds)
@@ -55,14 +55,14 @@ ENERGY_METER_PID=0
 # ---------------------------------------------------------------------------
 
 # --- H.264 / libx264 (0-51) ---
-H264_CRF_A=27
-H264_CRF_B=23
+H264_CRF_A=30
+H264_CRF_B=24
 
 # --- AV1 / libsvtav1 (0-63) ---
-AV1_CRF_A=36
+AV1_CRF_A=42
 
 # --- VP9 / libvpx-vp9 (0-63) ---
-VP9_CRF_A=36
+VP9_CRF_A=42
 
 # --- H.264 ceilings (cap / bufsize, bufsize = 2x cap) ---
 H264_CAP_144_A=50k    ; H264_BUF_144_A=100k
@@ -77,8 +77,8 @@ H264_CAP_720_A=1000k  ; H264_BUF_720_A=2000k
 H264_CAP_720_B=1500k  ; H264_BUF_720_B=3000k
 H264_CAP_1080_A=2000k ; H264_BUF_1080_A=4000k
 H264_CAP_1080_B=3000k ; H264_BUF_1080_B=6000k
-#H264_CAP_1440_A=4000k ; H264_BUF_1440_A=8000k
-#H264_CAP_1440_B=6000k ; H264_BUF_1440_B=12000k
+H264_CAP_1440_A=4000k ; H264_BUF_1440_A=8000k
+H264_CAP_1440_B=6000k ; H264_BUF_1440_B=12000k
 
 # --- VP9 ceilings ---
 VP9_CAP_144_A=40k     ; VP9_BUF_144_A=80k

@@ -29,15 +29,15 @@ fi
 
 base_name=$(basename "${INPUT}" .mp4)
 
-OUTPUT_BASE="./output_v4"        # Root output directory
-job_dir="${OUTPUT_BASE}/${base_name}_ccrf/SD_${CODEC}"
+OUTPUT_BASE="./output"        # Root output directory
+job_dir="${OUTPUT_BASE}/${base_name}/SD_${CODEC}"
 mkdir -p "${job_dir}"
 
 # Idle baseline window before FFmpeg starts (seconds)
-PRE_ENCODE_IDLE_S=15
+PRE_ENCODE_IDLE_S=10
 
 # Cooldown window after FFmpeg exits before the C program is killed (seconds)
-POST_ENCODE_COOLDOWN_S=15
+POST_ENCODE_COOLDOWN_S=10
 
 ENERGY_METER_PID=0
 
@@ -55,14 +55,14 @@ ENERGY_METER_PID=0
 # ---------------------------------------------------------------------------
 
 # --- H.264 / libx264 (0-51) ---
-H264_CRF_A=27
-H264_CRF_B=23
+H264_CRF_A=30
+H264_CRF_B=24
 
 # --- AV1 / libsvtav1 (0-63) ---
-AV1_CRF_A=36
+AV1_CRF_A=42
 
 # --- VP9 / libvpx-vp9 (0-63) ---
-VP9_CRF_A=36
+VP9_CRF_A=42
 
 # --- H.264 ceilings (cap / bufsize, bufsize = 2x cap) ---
 H264_CAP_144_A=50k    ; H264_BUF_144_A=100k

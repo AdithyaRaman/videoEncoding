@@ -29,8 +29,8 @@ fi
 
 base_name=$(basename "${INPUT}" .mp4)
 
-OUTPUT_BASE="./output_v4"        # Root output directory
-job_dir="${OUTPUT_BASE}/${base_name}_ccrf/FULL_${CODEC}"
+OUTPUT_BASE="./output"        # Root output directory
+job_dir="${OUTPUT_BASE}/${base_name}/FULL_${CODEC}"
 mkdir -p "${job_dir}"
 
 # Idle baseline window before FFmpeg starts (seconds)
@@ -55,14 +55,14 @@ ENERGY_METER_PID=0
 # ---------------------------------------------------------------------------
 
 # --- H.264 / libx264 (0-51) ---
-H264_CRF_A=27
-H264_CRF_B=23
+H264_CRF_A=30
+H264_CRF_B=24
 
 # --- AV1 / libsvtav1 (0-63) ---
-AV1_CRF_A=36
+AV1_CRF_A=42
 
 # --- VP9 / libvpx-vp9 (0-63) ---
-VP9_CRF_A=36
+VP9_CRF_A=42
 
 # --- H.264 ceilings (cap / bufsize, bufsize = 2x cap) ---
 H264_CAP_144_A=50k    ; H264_BUF_144_A=100k
@@ -305,7 +305,7 @@ echo "ffmpeg exited with status ${ff_status}"
 
 sleep "${POST_ENCODE_COOLDOWN_S}"
 kill_energy_meter
-trap - EXIT INT TERM
+# trap - EXIT INT TERM
 
 echo "Killed Energy Logging"
 exit "${ff_status}"
